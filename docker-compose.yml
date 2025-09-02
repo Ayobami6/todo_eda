@@ -1,0 +1,73 @@
+version: "3.8"
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    ports:
+      - "9092:9092"
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: todos
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+
+  debezium:
+    image: debezium/connect:2.5
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: debezium_configs
+      OFFSET_STORAGE_TOPIC: debezium_offsets
+      STATUS_STORAGE_TOPIC: debezium_statuses
+      KEY_CONVERTER_SCHEMAS_ENABLE: false
+      VALUE_CONVERTER_SCHEMAS_ENABLE: false
+    ports:
+      - "8083:8083"
+
+  django:
+    build: ./todo_cud
+    depends_on:
+      # - kafka
+      - postgres
+    env_file:
+      - ./todo_cud/.env
+    ports:
+      - "8000:8000"
+
+  gin:
+    build: ./todo_read
+    depends_on:
+      # - kafka
+      - mongodb
+    environment:
+      MONGO_URI: mongodb://mongodb:27017
+      KAFKA_BROKER_URL: kafka:9092
+    ports:
+      - "8080:8080"
