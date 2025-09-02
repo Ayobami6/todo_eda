@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # third party libraries
     "rest_framework",
     "corsheaders",
+    "todos",
 ]
 
 MIDDLEWARE = [
@@ -60,6 +61,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "todo_cud.urls"
+KAFKA_BROKER_URL = get_env("KAFKA_BROKER_URL", "localhost:9092")
 
 TEMPLATES = [
     {

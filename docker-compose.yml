@@ -28,7 +28,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432"
+      - "5431:5432"
 
   mongodb:
     image: mongo:6
@@ -46,20 +46,24 @@ services:
       CONFIG_STORAGE_TOPIC: debezium_configs
       OFFSET_STORAGE_TOPIC: debezium_offsets
       STATUS_STORAGE_TOPIC: debezium_statuses
-      KEY_CONVERTER_SCHEMAS_ENABLE: false
-      VALUE_CONVERTER_SCHEMAS_ENABLE: false
+    # KEY_CONVERTER_SCHEMAS_ENABLE: false
+    # VALUE_CONVERTER_SCHEMAS_ENABLE: false
     ports:
       - "8083:8083"
 
   django:
     build: ./todo_cud
     depends_on:
-      # - kafka
+      - kafka
       - postgres
     env_file:
       - ./todo_cud/.env
     ports:
       - "8000:8000"
+    command: >
+      sh -c "python manage.py migrate && python manage.py runserver"
+    volumes:
+      - ./todo_cud:/app
 
   gin:
     build: ./todo_read
