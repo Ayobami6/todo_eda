@@ -39,3 +39,13 @@ class TodoConsumer:
         finally:
             self.consumer.close()
             logger.info("Consumer closed.")
+
+    def start(self):
+        """Start consuming messages."""
+        logger.info("Starting consumer...")
+        self.consume_messages()
+
+
+todo_consumer = TodoConsumer()
+
+__all__ = ["todo_consumer"]
