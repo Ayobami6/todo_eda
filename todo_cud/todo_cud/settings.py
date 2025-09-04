@@ -61,7 +61,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "todo_cud.urls"
-KAFKA_BROKER_URL = get_env("KAFKA_BROKER_URL", "localhost:9092")
+KAFKA_BROKER_URL = get_env("KAFKA_BROKER_URL", "kafka:9092")
 
 TEMPLATES = [
     {

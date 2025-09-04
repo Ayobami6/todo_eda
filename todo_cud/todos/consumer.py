@@ -1,6 +1,7 @@
 import logging
 from kafka import KafkaConsumer
 from .tododb_service import TodoDBService
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ class TodoConsumer:
     def __init__(self):
         self.consumer = KafkaConsumer(
             "todos",
-            bootstrap_servers="localhost:9092",
+            bootstrap_servers=settings.KAFKA_BROKER_URL,
             group_id="todo_group",
             auto_offset_reset="earliest",
             enable_auto_commit=True,

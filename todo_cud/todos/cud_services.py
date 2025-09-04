@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class CUDService:
-    """Service class for creating, updating, and deleting todo items."""
+    """Kafka producer cud Service class for creating, updating, and deleting todo items."""
 
     TOPIC = "todos"
 
