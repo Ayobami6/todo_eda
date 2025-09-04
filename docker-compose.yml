@@ -79,13 +79,14 @@ services:
     volumes:
       - ./todo_cud:/app
 
-  gin:
+  gin-service:
     build: ./todo_read
     depends_on:
       # - kafka
       - mongodb
-    environment:
-      MONGO_URI: mongodb://mongodb:27017
-      KAFKA_BROKER_URL: kafka:9092
+    env_file:
+      - ./todo_read/.env
+
     ports:
       - "8080:8080"
+    command: ./app

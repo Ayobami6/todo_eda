@@ -1,17 +1,20 @@
 package api
 
 import (
-	"github.com/change_me/go_starter_rest/internal/controller"
+	"github.com/Ayobami6/todo_read/internal/controller"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type APIServer struct {
-	addr string
+	addr     string
+	dbClient *mongo.Client
 }
 
-func NewAPIServer(addr string) *APIServer {
+func NewAPIServer(addr string, dbClient *mongo.Client) *APIServer {
 	return &APIServer{
-		addr: addr,
+		addr:     addr,
+		dbClient: dbClient,
 	}
 }
 func (s *APIServer) Start() error {
