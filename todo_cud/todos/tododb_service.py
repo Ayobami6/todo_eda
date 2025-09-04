@@ -1,5 +1,6 @@
 import logging
 from .models import Todo
+import json
 
 
 class TodoDBService:
@@ -8,6 +9,7 @@ class TodoDBService:
     @staticmethod
     def process_message(message):
         """Process a message to perform the corresponding database operation."""
+        message = json.loads(message)
         operation = message.get("operation")
         data = message.get("data")
 
