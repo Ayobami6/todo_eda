@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from sparky_utils.response import service_response
-from .serializers import TodoCreateSerializer
+from .serializers import TodoCreateSerializer, TodoSerializer
 from .kafka_producer import todo_producer
 from sparky_utils.advice import exception_advice
+from .models import Todo
 
 # Create your views here.
 
@@ -13,7 +14,7 @@ class RootAPIView(APIView):
         return service_response(message="Todo CUD Service is up and running.")
 
 
-class TodoCreateAPIView(APIView):
+class TodoAPIView(APIView):
 
     @exception_advice()
     def post(self, request):
@@ -25,4 +26,16 @@ class TodoCreateAPIView(APIView):
         todo_producer.send_message(data, producer_topic, "create")
         return service_response(
             status="success", message="Todo create successfully queued", status_code=202
+        )
+
+    @exception_advice()
+    def get(self, request, *args, **kwargs):
+        todos = Todo.objects.all()
+        # serialize the todos
+        serializer = TodoSerializer(todos, many=True)
+
+        return service_response(
+            message="Todos fetch successfully",
+            data=serializer.data,
+            status_code=200,
         )
