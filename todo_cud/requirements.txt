@@ -8,3 +8,4 @@ python-dotenv==1.1.1
 sparky-utils==1.1.8
 sqlparse==0.5.3
 kafka-python
+djangorestframework-simplejwt

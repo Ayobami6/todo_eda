@@ -2,6 +2,7 @@ import logging
 from kafka import KafkaConsumer
 from .tododb_service import TodoDBService
 from django.conf import settings
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,9 @@ class TodoConsumer:
     def start(self):
         """Start consuming messages."""
         logger.info("Starting consumer...")
-        self.consume_messages()
+        # self.consume_messages()
+        thread = threading.Thread(target=self.consume_messages, daemon=True)
+        thread.start()
 
 
 todo_consumer = TodoConsumer()
