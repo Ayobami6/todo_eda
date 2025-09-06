@@ -26,7 +26,7 @@ func (s *APIServer) Start() error {
 	userController := controller.NewUserController()
 	userController.RegisterRoutes(router)
 	// set up todo controller with service
-	todoService := impls.NewTodoServiceImpl(s.dbClient.Database("todo_db"))
+	todoService := impls.NewTodoServiceImpl(s.dbClient.Database("todos"))
 	todoController := controller.NewTodoController(todoService)
 	todoController.RegisterRoutes(router)
 	// start server
