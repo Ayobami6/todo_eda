@@ -6,26 +6,17 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Ayobami6/todo_read/internal/model"
 	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// Todo struct (same shape as your table)
-type Todo struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
-	Completed   bool   `json:"completed"`
-}
-
 // DebeziumEvent represents the outer wrapper
 type DebeziumEvent struct {
 	Payload struct {
-		Before *Todo  `json:"before"`
-		After  *Todo  `json:"after"`
-		Op     string `json:"op"`
+		Before *model.Todo `json:"before"`
+		After  *model.Todo `json:"after"`
+		Op     string      `json:"op"`
 	} `json:"payload"`
 }
 type KafkaConsumer struct {
@@ -60,10 +51,12 @@ func (kc *KafkaConsumer) ConsumeDebeziumTodoTask() {
 			log.Printf("Failed to unmarshal message: %v", err)
 			continue
 		}
+		log.Printf("Received event: %+v", event)
 
 		// Only act on INSERT or UPDATE
 		if event.Payload.After != nil {
 			todo := *event.Payload.After
+			log.Println("This is the todo: ", todo)
 			_, err := collection.InsertOne(context.Background(), todo)
 			if err != nil {
 				log.Printf("Failed to insert todo into MongoDB: %v", err)
