@@ -39,3 +39,27 @@ class TodoAPIView(APIView):
             data=serializer.data,
             status_code=200,
         )
+
+    @exception_advice()
+    def delete(self, request, *args, **kwargs):
+        todo_id = kwargs.get("id")
+        producer_topic = "todos"
+        # send event
+        todo_producer.send_message({"id": todo_id}, producer_topic, "delete")
+        return service_response(
+            status="success", message="Todo delete successfully queued", status_code=202
+        )
+
+    @exception_advice()
+    def patch(self, request, *args, **kwargs):
+        todo_id = kwargs.get("id")
+        serializer = TodoCreateSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        data["id"] = todo_id
+        producer_topic = "todos"
+        # send event
+        todo_producer.send_message(data, producer_topic, "update")
+        return service_response(
+            status="success", message="Todo update successfully queued", status_code=202
+        )
