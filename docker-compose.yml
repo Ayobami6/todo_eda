@@ -43,6 +43,18 @@ services:
     ports:
       - "27017:27017"
 
+  # add kafka ui
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: todo_eda_cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    ports:
+      - "8085:8080"
+
   debezium:
     image: debezium/connect:2.5
     depends_on:
