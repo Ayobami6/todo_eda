@@ -69,7 +69,7 @@ Before running the project, ensure you have:
 2. Build and start the Docker containers:
 
    ```bash
-   docker-compose up --build
+   docker-compose up -d
    ```
 
    This sets up:
@@ -98,7 +98,7 @@ Before running the project, ensure you have:
 Configuration files are located in the following locations:
 
 * **Kafka settings** → `docker-compose.yml`
-* **Django settings** → `todo/settings.py`
+* **Django settings** → `todo_cud/settings.py`
 * **Gin settings** → `config/config.go`
 * **Debezium connector config** → `debezium/connector.json`
 
@@ -108,16 +108,16 @@ Key environment variables you may need to adjust:
 
 ```bash
 # Kafka
-KAFKA_BROKER_URL=localhost:9092
+KAFKA_BROKER_URL=kafka:9092
 
 # PostgreSQL
-POSTGRES_DB=todoapp
-POSTGRES_USER=postgres
+POSTGRES_DB=todos
+POSTGRES_USER=user
 POSTGRES_PASSWORD=password
 
 # MongoDB
-MONGO_URL=mongodb://localhost:27017
-MONGO_DB=todoapp
+MONGO_URL=mongodb://mongodb:27017
+MONGO_DB=todos
 ```
 
 Make sure to adjust **Kafka broker addresses** and **database credentials** if needed.
@@ -141,7 +141,7 @@ Make sure to adjust **Kafka broker addresses** and **database credentials** if n
 You can also monitor Kafka topics using [Kafka Tool](http://www.kafkatool.com/) or:
 
 ```bash
-docker exec -it kafka kafka-console-consumer --topic todo-events --from-beginning --bootstrap-server localhost:9092
+docker exec -it kafka kafka-console-consumer --topic todos --from-beginning --bootstrap-server kafka:9092
 ```
 
 ## API Endpoints
@@ -170,7 +170,7 @@ docker exec -it kafka kafka-console-consumer --topic todo-events --from-beginnin
 
 **Request:**
 ```bash
-curl -X POST http://localhost:8000/api/todos/ \
+curl -X POST http://localhost:8000/todos/ \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Learn Kafka",
@@ -182,28 +182,22 @@ curl -X POST http://localhost:8000/api/todos/ \
 **Response:**
 ```json
 {
-  "id": 1,
-  "title": "Learn Kafka",
-  "description": "Study event-driven architecture",
-  "completed": false,
-  "created_at": "2025-09-02T10:00:00Z",
-  "updated_at": "2025-09-02T10:00:00Z"
+  "status": "success",
+  "status_code": 202,
+  "data": {},
+  "message": "Todo create successfully queued"
 }
 ```
 
 **Kafka Event Produced:**
 ```json
 {
-  "event_type": "todo.created",
-  "todo_id": 1,
+  "operation": "create", 
   "data": {
-    "id": 1,
-    "title": "Learn Kafka",
-    "description": "Study event-driven architecture",
-    "completed": false,
-    "created_at": "2025-09-02T10:00:00Z"
+    "title": "Check Order Ops New Test", 
+    "description": "Check Order Ops New 001"
   },
-  "timestamp": "2025-09-02T10:00:00Z"
+  "timestamp": "2025-09-08T08:07:36.506264"
 }
 ```
 
@@ -211,31 +205,44 @@ curl -X POST http://localhost:8000/api/todos/ \
 
 **Request:**
 ```bash
-curl -X GET http://localhost:8080/api/todos/
+curl -X GET http://localhost:8080/todos/
 ```
 
 **Response:**
 ```json
-{
-  "todos": [
+[
     {
-      "id": 1,
-      "title": "Learn Kafka",
-      "description": "Study event-driven architecture",
-      "completed": false,
-      "created_at": "2025-09-02T10:00:00Z",
-      "updated_at": "2025-09-02T10:00:00Z"
+        "id": 16,
+        "title": "Link the golang debezium consumer New",
+        "description": "Link the golang debezium consumer Ok",
+        "created_at": "2025-09-06T12:56:56.855869Z",
+        "updated_at": "2025-09-06T12:56:56.855905Z",
+        "completed": false
+    },
+    {
+        "id": 18,
+        "title": "Check Order Ops New",
+        "description": "Check Order Ops New 001",
+        "created_at": "2025-09-08T08:01:47.627717Z",
+        "updated_at": "2025-09-08T08:01:47.628237Z",
+        "completed": false
+    },
+    {
+        "id": 19,
+        "title": "Check Order Ops New Test",
+        "description": "Check Order Ops New 001",
+        "created_at": "2025-09-08T08:07:36.544031Z",
+        "updated_at": "2025-09-08T08:07:36.544061Z",
+        "completed": false
     }
-  ],
-  "total": 1
-}
+]
 ```
 
 ### Updating a Todo (Django)
 
 **Request:**
 ```bash
-curl -X PUT http://localhost:8000/api/todos/1/ \
+curl -X PUT http://localhost:8000/todos/1/ \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Learn Kafka",
@@ -247,16 +254,12 @@ curl -X PUT http://localhost:8000/api/todos/1/ \
 **Kafka Event Produced:**
 ```json
 {
-  "event_type": "todo.updated",
-  "todo_id": 1,
+  "operation": "update", 
   "data": {
-    "id": 1,
-    "title": "Learn Kafka",
-    "description": "Master event-driven architecture",
-    "completed": true,
-    "updated_at": "2025-09-02T10:30:00Z"
+    "title": "Check Order Ops New Test", 
+    "description": "Check Order Ops New 001"
   },
-  "timestamp": "2025-09-02T10:30:00Z"
+  "timestamp": "2025-09-08T08:07:36.506264"
 }
 ```
 
@@ -296,7 +299,7 @@ When PostgreSQL data changes, Debezium produces events like:
 
 Monitor the following Kafka topics:
 
-* `todo-events` - Application events from Django
+* `todos` - Application events from Django
 * `postgres.public.todos` - CDC events from Debezium
 
 ### Health Checks
@@ -314,8 +317,8 @@ Check service logs:
 docker-compose logs
 
 # View specific service logs
-docker-compose logs django-api
-docker-compose logs gin-api
+docker-compose logs django
+docker-compose logs gin-service
 docker-compose logs kafka
 ```
 
@@ -397,10 +400,10 @@ To contribute:
 
 ```bash
 # Reset Kafka consumer groups
-docker exec -it kafka kafka-consumer-groups --bootstrap-server localhost:9092 --group gin-consumer --reset-offsets --to-earliest --topic todo-events --execute
+docker exec -it kafka kafka-consumer-groups --bootstrap-server kafka:9092 --group gin-consumer --reset-offsets --to-earliest --topic todos --execute
 
 # Check Kafka topics
-docker exec -it kafka kafka-topics --list --bootstrap-server localhost:9092
+docker exec -it kafka kafka-topics --list --bootstrap-server kafka:9092
 
 # View PostgreSQL logs
 docker-compose logs postgres
